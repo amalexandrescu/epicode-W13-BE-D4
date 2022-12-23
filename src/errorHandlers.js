@@ -23,6 +23,7 @@ export const unauthorizedHandler = (err, req, res, next) => {
 };
 
 export const notFoundHandler = (err, req, res, next) => {
+  // console.log("404 error obj: ", err.message);
   // 404
   // if(responsibility of that kind of error is mine) send the error back to the client as response
   // else send the error to the next error handler
