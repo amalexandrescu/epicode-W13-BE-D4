@@ -10,6 +10,9 @@ import {
   badRequestHandler,
   unauthorizedHandler,
 } from "./errorHandlers.js";
+// import dotenv from 'dotenv'
+
+// dotenv.config()
 
 const server = express();
 const port = 3001;
@@ -31,10 +34,9 @@ const publicFolderPath = join(process.cwd(), "./public");
 server.use(express.static(publicFolderPath));
 server.use(cors());
 server.use(express.json());
-
+server.use("/blogPosts", filesRouter);
 server.use("/blogPosts", blogPostsRouter);
 // server.use("/files", filesRouter);
-server.use("/blogPosts", filesRouter);
 
 server.use(badRequestHandler); // 400
 server.use(unauthorizedHandler); // 401

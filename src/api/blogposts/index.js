@@ -3,6 +3,7 @@ import uniqid from "uniqid"; //3rd party module
 import httpErrors from "http-errors";
 import { checksBlogPostSchema, triggerBadRequest } from "./validator.js";
 import { getBlogPosts, writeBlogPosts } from "../../library/fs-tools.js";
+import { sendEmail } from "../../library/email-tools.js";
 
 const { NotFound, Unauthorized, BadRequest } = httpErrors;
 
@@ -30,6 +31,9 @@ blogPostsRouter.post(
       const blogPostsArray = await getBlogPosts();
       blogPostsArray.push(newBlogPost);
       await writeBlogPosts(blogPostsArray);
+      const { email } = req.body;
+      console.log(email);
+      await sendEmail(email);
       res.status(201).send({ newBlogPost: newBlogPost });
     } catch (error) {
       next(error); //this sends the error to the errorHandlers
@@ -108,6 +112,20 @@ blogPostsRouter.delete("/:blogPostId", async (req, res, next) => {
     } else {
       next(NotFound(`Blog post with id ${req.params.blogPostId} not found!`));
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+blogPostsRouter.post("/sendEmail", async (req, res, next) => {
+  try {
+    // 1. Receive user's data in req.body
+    const { email } = req.body;
+    // 2. Save new user in db
+    // 3. Send email to new user
+    console.log("before send");
+    await sendEmail(email);
+    res.send();
   } catch (error) {
     next(error);
   }

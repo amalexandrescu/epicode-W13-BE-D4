@@ -6,6 +6,12 @@ import {
   getBlogPosts,
   writeBlogPosts,
 } from "../../library/fs-tools.js";
+import { pipeline } from "stream";
+import { createGzip } from "zlib";
+import json2csv from "json2csv";
+import { getBlogPostsJsonReadableStream } from "../../library/fs-tools.js";
+import { getPDFReadableStream } from "../../library/pdf-tools.js";
+// import { from } from "json2csv/JSON2CSVTransform.js";
 
 const filesRouter = express.Router();
 
@@ -95,5 +101,59 @@ filesRouter.post("/:id/comments", async (req, res, next) => {
 //     }
 //   }
 // );
+
+filesRouter.get("/blogPostsJSON", (req, res, next) => {
+  try {
+    console.log("files router test");
+    // SOURCES (file on disk, http request, ...) --> DESTINATION (file on disk, terminal, http response, ...)
+
+    // SOURCE (READABLE STREAM on blogposts.json file) --> DESTINATION (WRITABLE STREAM http response)
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=blogPosts.json.gz"
+    );
+    // without this header the browser will try to open (not save) the file.
+    // This header will tell the browser to open the "save file as" dialog
+    const source = getBlogPostsJsonReadableStream();
+    const transform = createGzip();
+    const destination = res;
+    pipeline(source, transform, destination, (err) => {
+      if (err) console.log(err);
+    });
+    // res.send("trying to fix this");
+  } catch (error) {
+    console.log("error", error);
+    next(error);
+  }
+});
+
+filesRouter.get("/blogsPdf", async (req, res, next) => {
+  res.setHeader("Content-Disposition", "attachment; filename=test.pdf");
+
+  const blogs = await getBlogPosts();
+  const source = getPDFReadableStream(blogs);
+  const destination = res;
+  pipeline(source, destination, (err) => {
+    if (err) console.log(err);
+  });
+});
+
+filesRouter.get("/blogsCSV", (req, res, next) => {
+  try {
+    res.setHeader("Content-Disposition", "attachment; filename=blogs.csv");
+    // SOURCE (readable stream on blogs.json) --> TRANSFORM (json into csv) --> DESTINATION (response)
+    const source = getBlogPostsJsonReadableStream();
+    const transform = new json2csv.Transform({
+      fields: ["title", "category"],
+    });
+    const destination = res;
+    pipeline(source, transform, destination, (err) => {
+      if (err) console.log(err);
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default filesRouter;
