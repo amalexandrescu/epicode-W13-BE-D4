@@ -32,7 +32,6 @@ blogPostsRouter.post(
       blogPostsArray.push(newBlogPost);
       await writeBlogPosts(blogPostsArray);
       const { email } = req.body;
-      console.log(email);
       await sendEmail(email);
       res.status(201).send({ newBlogPost: newBlogPost });
     } catch (error) {

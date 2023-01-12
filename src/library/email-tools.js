@@ -1,6 +1,4 @@
 import sgMail from "@sendgrid/mail";
-
-console.log(process.env.SENDGRID_KEY);
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
 export const sendEmail = async (recipientAddress) => {
@@ -21,9 +19,7 @@ export const sendEmail = async (recipientAddress) => {
     // ],
   };
   try {
-    console.log(msg);
     let resp = await sgMail.send(msg);
-    console.log(resp);
   } catch (error) {
     console.log(error);
   }
